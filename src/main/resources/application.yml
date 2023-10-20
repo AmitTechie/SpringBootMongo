@@ -1,0 +1,7 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://amittechie1:WelcomeMongo@cluster0.nhgom9g.mongodb.net/?retryWrites=true&w=majority
+      #port: 27017
+      authentication-database: admin
+      database: Task
