@@ -2,6 +2,7 @@ package com.javatechie.controller;
 
 
 import com.javatechie.model.Event;
+import com.javatechie.model.EventQueryFilter;
 import com.javatechie.model.Task;
 import com.javatechie.service.EventService;
 import com.javatechie.service.TaskService;
@@ -19,8 +20,9 @@ public class EventController {
 
     @PostMapping("/webhooks/{tenant_name}/query")
     @ResponseStatus(HttpStatus.CREATED)
-    public List<Event> getEvent(@PathVariable String tenant_name, @RequestBody Event event){
-         return eventService.findAllEvent();
+    public List<Event> getEvent(@PathVariable String tenant_name, @RequestBody EventQueryFilter eventQueryFilter){
+        eventQueryFilter.setTenant(tenant_name);
+         return eventService.getEventsByFilter(eventQueryFilter);
     }
 
     @PostMapping("/webhooks/{tenant_name}/events")
