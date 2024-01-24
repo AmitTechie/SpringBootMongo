@@ -1,6 +1,7 @@
 package com.javatechie.controller;
 
 
+import com.javatechie.model.Event;
 import com.javatechie.model.Task;
 import com.javatechie.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,7 @@ public class TaskController {
     public Task modifyTask(@RequestBody Task task){
         return taskService.updateTask(task);
     }
+
 
     @DeleteMapping("/{taskId}")
     public String deleteTask(@PathVariable String taskId){
