@@ -24,16 +24,13 @@ public class EventService {
     @Autowired
     private EventRepository eventRepository;
 
-    // Create, Read, Update, Delete
-
-
     public Event addEvent(Event event){
         event.setEvent_id(UUID.randomUUID().toString());
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        event.setEvent_timestamp(simpleDateFormat.format(System.currentTimeMillis()));
-        System.out.println(event.getEvent_timestamp());
+        event.setEvent_created_at(simpleDateFormat.format(System.currentTimeMillis()));
+        System.out.println(event.getEvent_created_at());
 
-        //get the category..
+        //get category..
         Set<String> categories = getUrlCategories(event.getUrl());
         if(categories != null || !categories.isEmpty()){
             event.setCategories(categories);
@@ -42,49 +39,51 @@ public class EventService {
         return eventRepository.save(event);
     }
 
-    public List<Event> findAllEvent(){
-        List<Event> all = eventRepository.findAll();
-        System.out.println("FOUND:::::: "+all.size());
-        return all;
-    }
-
     public List<Event> getEventsByFilter(EventQueryFilter eventQueryFilter){
         List<Event> res = new ArrayList<>();
         List<Event> events = eventRepository.findByFilter(eventQueryFilter.getTenant());
         System.out.println(eventQueryFilter.toString());
         if(events != null) {
-
             for (Event event : events) {
+                System.out.println(event.toString());
                 // filter by user_id
-                if(!eventQueryFilter.getUser_id().isEmpty() && !event.getUser_id().equals(eventQueryFilter.getUser_id())){
-                    System.out.println("user_id didn't matched!"+event.getUser_id()+" - "+eventQueryFilter.getUser_id());
-                    continue;
-                }
-
-                // filter by category
-                if(!eventQueryFilter.getCategory().isEmpty() && !event.getCategory().equals(eventQueryFilter.getCategory())){
-                    System.out.println("category didn't matched!"+event.getCategory()+" - "+eventQueryFilter.getCategory());
+                if(eventQueryFilter.getUser_id() != null && !eventQueryFilter.getUser_id().isEmpty() && !event.getUser_id().equals(eventQueryFilter.getUser_id())){
+                    //System.out.println("user_id didn't matched!"+event.getUser_id()+" - "+eventQueryFilter.getUser_id());
                     continue;
                 }
 
                 // filter by domain
-                if(!eventQueryFilter.getUrl_domain().isEmpty() && !event.getUrl_domain().equals(eventQueryFilter.getUrl_domain())){
-                    System.out.println("domain didn't matched!"+event.getUrl_domain()+" - "+eventQueryFilter.getUrl_domain());
+                if(eventQueryFilter.getUrl_domain() != null && !eventQueryFilter.getUrl_domain().isEmpty() && !event.getUrl_domain().equals(eventQueryFilter.getUrl_domain())){
+                    //System.out.println("domain didn't matched!"+event.getUrl_domain()+" - "+eventQueryFilter.getUrl_domain());
                     continue;
                 }
 
-                // filter by date
-                if(!eventQueryFilter.getFrom_date().isEmpty() && !eventQueryFilter.getTo_date().isEmpty()){
-                    System.out.println("date filter entered!!");
+                // filter by start date
+                if(eventQueryFilter.getFrom_date() != null && !eventQueryFilter.getFrom_date().isEmpty()){
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     try {
+
+                        //we may have only start date in the query filter, so it will return all the events
                         Date start_date = simpleDateFormat.parse(eventQueryFilter.getFrom_date());
+                        Date event_date = simpleDateFormat.parse(event.getEvent_created_at());
+
+                        if(event_date.before(start_date)){
+                            //System.out.println("date didn't matched!");
+                            continue;
+                        }
+                    } catch (ParseException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+
+                // filter by end date
+                if(eventQueryFilter.getTo_date() != null && !eventQueryFilter.getTo_date().isEmpty()){
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    try {
                         Date end_date = simpleDateFormat.parse(eventQueryFilter.getTo_date());
-
-                        Date event_date = simpleDateFormat.parse(event.getEvent_timestamp());
-
-                        if(event_date.before(start_date) || event_date.after(end_date)){
-                            System.out.println("date didn't matched!");
+                        Date event_date = simpleDateFormat.parse(event.getEvent_created_at());
+                        if(event_date.after(end_date)){
+                            //System.out.println("date didn't matched!");
                             continue;
                         }
                     } catch (ParseException ex) {
@@ -93,8 +92,9 @@ public class EventService {
                 }
 
                 //filter by category
-                if(!eventQueryFilter.getCategory().isEmpty()){
-                    if(event.getCategories() != null && !event.getCategories().contains(eventQueryFilter.getCategory())){
+                if(eventQueryFilter.getCategory() != null && !eventQueryFilter.getCategory().isEmpty()){
+                    if(event.getCategories() == null || !event.getCategories().contains(eventQueryFilter.getCategory())){
+                        //System.out.println("category didn't matched!");
                         continue;
                     }
                 }
@@ -132,7 +132,6 @@ public class EventService {
             int responseCode = conn.getResponseCode();
 
             if (responseCode != 200) {
-                //throw new RuntimeException("HttpResponseCode: " + responseCode);
                 return "";
             } else {
 
@@ -162,22 +161,26 @@ public class EventService {
         System.out.println(jsonObject.toString());
 
         JSONArray arr = (JSONArray) jsonObject.get("data");
+        if(arr == null){
+            return null;
+        }
+
         JSONObject catData = (JSONObject) arr.get(0);
         JSONArray categoriesList = (JSONArray) catData.get("categories");
-        System.out.println("Total categories: " + categoriesList.length());
+
+        if(categoriesList == null){
+            return null;
+        }
+
+        //System.out.println("Total categories: " + categoriesList.length());
         for (int i = 0; i < categoriesList.length(); i++) {
-
             JSONObject categoryObj = (JSONObject) categoriesList.get(i);
-
             String category = categoryObj.get("label").toString();
-
             System.out.println(category);
             if(!category.isEmpty()){
                 categories.add(category);
             }
         }
-
-
         return categories;
         }
 }

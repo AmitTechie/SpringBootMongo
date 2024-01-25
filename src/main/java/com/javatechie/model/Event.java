@@ -15,7 +15,7 @@ import java.util.Set;
 public class Event {
     @Id
     private String event_id;
-    private String event_timestamp;
+    private String event_created_at;
     private String user_id;
     private String url;
     private String url_domain;
