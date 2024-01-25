@@ -3,9 +3,7 @@ package com.javatechie.controller;
 
 import com.javatechie.model.Event;
 import com.javatechie.model.EventQueryFilter;
-import com.javatechie.model.Task;
 import com.javatechie.service.EventService;
-import com.javatechie.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +15,11 @@ import java.util.List;
 public class EventController {
     @Autowired
     private EventService eventService;
+
+    @GetMapping("/") public String health()
+    {
+        return "Hello event service is running fine!";
+    }
 
     @PostMapping("/webhooks/{tenant_name}/query")
     @ResponseStatus(HttpStatus.CREATED)

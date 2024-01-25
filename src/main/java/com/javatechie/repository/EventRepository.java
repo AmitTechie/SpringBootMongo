@@ -1,11 +1,9 @@
 package com.javatechie.repository;
 
 import com.javatechie.model.Event;
-import com.javatechie.model.Task;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
-import java.util.Date;
 import java.util.List;
 
 public interface EventRepository extends MongoRepository<Event, String> {

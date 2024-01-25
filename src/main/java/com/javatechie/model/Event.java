@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Set;
+
 @Document("event")
 @Data
 @AllArgsConstructor
@@ -20,4 +22,5 @@ public class Event {
     private String body;
     private String category;
     private String tenant;
+    private Set<String> categories;
 }
